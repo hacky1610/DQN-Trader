@@ -470,19 +470,19 @@ class SensitivityRun:
 
     def train(self):
         self.dqn_pattern.train(self.n_episodes)
-        self.dqn_vanilla.train(self.n_episodes)
-        self.dqn_candle_rep.train(self.n_episodes)
-        self.dqn_windowed.train(self.n_episodes)
-        self.mlp_pattern.train(self.n_episodes)
-        self.mlp_vanilla.train(self.n_episodes)
-        self.mlp_candle_rep.train(self.n_episodes)
-        self.mlp_windowed.train(self.n_episodes)
-        self.cnn1d.train(self.n_episodes)
-        self.cnn2d.train(self.n_episodes)
-        self.gru.train(self.n_episodes)
-        self.deep_cnn.train(self.n_episodes)
-        self.cnn_gru.train(self.n_episodes)
-        self.cnn_attn.train(self.n_episodes)
+        # self.dqn_vanilla.train(self.n_episodes)
+        # self.dqn_candle_rep.train(self.n_episodes)
+        # self.dqn_windowed.train(self.n_episodes)
+        # self.mlp_pattern.train(self.n_episodes)
+        # self.mlp_vanilla.train(self.n_episodes)
+        # self.mlp_candle_rep.train(self.n_episodes)
+        # self.mlp_windowed.train(self.n_episodes)
+        # self.cnn1d.train(self.n_episodes)
+        # self.cnn2d.train(self.n_episodes)
+        # self.gru.train(self.n_episodes)
+        # self.deep_cnn.train(self.n_episodes)
+        # self.cnn_gru.train(self.n_episodes)
+        # self.cnn_attn.train(self.n_episodes)
 
     def evaluate_sensitivity(self):
         key = None
@@ -495,13 +495,11 @@ class SensitivityRun:
 
         self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-vanilla'][key] = self.dqn_vanilla.test().get_daily_portfolio_value()
-        self.test_portfolios['DQN-candlerep'][
-            key] = self.dqn_candle_rep.test().get_daily_portfolio_value()
+        self.test_portfolios['DQN-candlerep'][key] = self.dqn_candle_rep.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-windowed'][key] = self.dqn_windowed.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-vanilla'][key] = self.mlp_vanilla.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-candlerep'][
-            key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
+        self.test_portfolios['MLP-candlerep'][key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
         self.test_portfolios['CNN1d'][key] = self.cnn1d.test().get_daily_portfolio_value()
         self.test_portfolios['CNN2d'][key] = self.cnn2d.test().get_daily_portfolio_value()
@@ -509,6 +507,26 @@ class SensitivityRun:
         self.test_portfolios['Deep-CNN'][key] = self.deep_cnn.test().get_daily_portfolio_value()
         self.test_portfolios['CNN-GRU'][key] = self.cnn_gru.test().get_daily_portfolio_value()
         self.test_portfolios['CNN-ATTN'][key] = self.cnn_attn.test().get_daily_portfolio_value()
+
+    def evaluate_signals(self,path):
+        self.dqn_pattern.test().get_signal_graph(os.path.join(path,"dqn_pattern.png"))
+        self.dqn_vanilla.test().get_signal_graph(os.path.join(path,"dqn_vanilla.png"))
+        self.dqn_candle_rep.test().get_signal_graph(os.path.join(path,"dqn_candle_rep.png"))
+        self.dqn_windowed.test().get_signal_graph(os.path.join(path,"dqn_windowed.png"))
+        self.mlp_pattern.test().get_signal_graph(os.path.join(path,"mlp_pattern.png"))
+        self.mlp_candle_rep.test().get_signal_graph(os.path.join(path,"mlp_candle_rep.png"))
+        self.mlp_vanilla.test().get_signal_graph(os.path.join(path,"mlp_vanilla.png"))
+        self.mlp_windowed.test().get_signal_graph(os.path.join(path,"mlp_windowed.png"))
+        self.cnn1d.test().get_signal_graph(os.path.join(path,"cnn1d.png"))
+        self.cnn2d.test().get_signal_graph(os.path.join(path,"cnn2d.png"))
+        self.cnn2d.test().get_signal_graph(os.path.join(path,"cnn2d.png"))
+        self.gru.test().get_signal_graph(os.path.join(path,"gru.png"))
+        self.deep_cnn.test().get_signal_graph(os.path.join(path,"deep_cnn.png"))
+
+        self.cnn_gru.test().get_signal_graph(os.path.join(path, "cnn_gru.png"))
+        self.cnn_attn.test().get_signal_graph(os.path.join(path, "cnn_attn.png"))
+
+
 
     def plot_and_save_sensitivity(self):
         plot_path = os.path.join(self.experiment_path, 'plots')
@@ -536,8 +554,9 @@ class SensitivityRun:
                     ax = df.plot(x='date', y='portfolio', label=gamma)
                     first = False
 
-            ax.set(xlabel='Time', ylabel='%Rate of Return')
-            ax.set_title(f'Analyzing the sensitivity of {model_name} to {self.evaluation_parameter}')
+            if ax != None:
+                ax.set(xlabel='Time', ylabel='%Rate of Return')
+                ax.set_title(f'Analyzing the sensitivity of {model_name} to {self.evaluation_parameter}')
             plt.legend()
             fig_file = os.path.join(plot_path, f'{model_name}.jpg')
             plt.savefig(fig_file, dpi=300)
@@ -590,9 +609,12 @@ if __name__ == '__main__':
         run.reset()
         run.train()
         run.evaluate_sensitivity()
+        run.evaluate_signals(f"./Results/gamma/")
         pbar.update(1)
 
     run.save_experiment()
+
+
 
     # test batch-size
     run = SensitivityRun(
@@ -614,6 +636,7 @@ if __name__ == '__main__':
         run.reset()
         run.train()
         run.evaluate_sensitivity()
+        run.evaluate_signals(f"./Results/batch size/")
         pbar.update(1)
 
     run.save_experiment()
@@ -638,6 +661,7 @@ if __name__ == '__main__':
         run.reset()
         run.train()
         run.evaluate_sensitivity()
+        run.evaluate_signals(f"./Results/replay_memory_size/")
         pbar.update(1)
 
     run.save_experiment()

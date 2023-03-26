@@ -51,7 +51,6 @@ class YahooFinanceDataLoader:
         if not load_from_file:
             self.data, self.patterns = self.load_data()
             self.save_pattern()
-            self.normalize_data()
             self.data.to_csv(f'{self.DATA_PATH}data_processed.csv', index=True)
 
             if begin_date is not None:
@@ -69,6 +68,8 @@ class YahooFinanceDataLoader:
             else:
                 raise ValueError('Split point should be either int or date!')
 
+            self.normalize_data(self.data_train,self.data_test)
+
             self.data_train_with_date = self.data_train.copy()
             self.data_test_with_date = self.data_test.copy()
 
@@ -82,7 +83,7 @@ class YahooFinanceDataLoader:
             labels = [ast.literal_eval(l) for l in labels]
             self.data['label'] = labels
             self.load_pattern()
-            self.normalize_data()
+
 
             if begin_date is not None:
                 self.data = self.data[self.data.index >= begin_date]
@@ -98,6 +99,9 @@ class YahooFinanceDataLoader:
                 self.data_test = self.data[split_point:]
             else:
                 raise ValueError('Split point should be either int or date!')
+
+            self.normalize_data(self.data_train,self.data_test)
+
 
             self.data_train_with_date = self.data_train.copy()
             self.data_test_with_date = self.data_test.copy()
@@ -144,13 +148,26 @@ class YahooFinanceDataLoader:
         with open(self.OBJECT_PATH + 'pattern.pkl', 'rb') as input:
             self.patterns = pickle.load(input)
 
-    def normalize_data(self):
+    def normalize_data(self,train,test):
         """
         This function normalizes the input data
         @return:
         """
-        min_max_scaler = MinMaxScaler()
-        self.data['open_norm'] = min_max_scaler.fit_transform(self.data.open.values.reshape(-1, 1))
-        self.data['high_norm'] = min_max_scaler.fit_transform(self.data.high.values.reshape(-1, 1))
-        self.data['low_norm'] = min_max_scaler.fit_transform(self.data.low.values.reshape(-1, 1))
-        self.data['close_norm'] = min_max_scaler.fit_transform(self.data.close.values.reshape(-1, 1))
+        o_min_max_scaler = MinMaxScaler()
+        h_min_max_scaler = MinMaxScaler()
+        c_min_max_scaler = MinMaxScaler()
+        l_min_max_scaler = MinMaxScaler()
+
+        train['open_norm'] = o_min_max_scaler.fit_transform(train.open.values.reshape(-1, 1))
+        train['high_norm'] = h_min_max_scaler.fit_transform(train.high.values.reshape(-1, 1))
+        train['low_norm'] = l_min_max_scaler.fit_transform(train.low.values.reshape(-1, 1))
+        train['close_norm'] = c_min_max_scaler.fit_transform(train.close.values.reshape(-1, 1))
+
+        test['open_norm'] = o_min_max_scaler.transform(test.open.values.reshape(-1, 1))
+        test['high_norm'] = h_min_max_scaler.transform(test.high.values.reshape(-1, 1))
+        test['low_norm'] = l_min_max_scaler.transform(test.low.values.reshape(-1, 1))
+        test['close_norm'] = c_min_max_scaler.transform(test.close.values.reshape(-1, 1))
+
+
+
+

@@ -1,5 +1,7 @@
+import os.path
+
 import numpy as np
-from scipy import stats
+from matplotlib import pyplot as plt
 
 
 class Evaluation:
@@ -264,6 +266,27 @@ class Evaluation:
                 portfolio_value.append(portfolio_value[-1])
 
         return portfolio_value
+
+    def get_signal_graph(self,path):
+        plt.figure(figsize=(15, 6))
+        plt.cla()
+        buy_ticks = []
+        sell_ticks = []
+        for i in range(len(self.data)):
+            action = self.data[self.action_label][i]
+            if action == 'buy':  # then buy and pay the transaction cost
+                buy_ticks.append(i)
+            elif action == 'sell':  # then sell and pay the transaction cost
+                sell_ticks.append(i)
+
+        plt.plot(self.data.close)
+
+        # Markers: https://matplotlib.org/stable/gallery/lines_bars_and_markers/marker_reference.html#sphx-glr-gallery-lines-bars-and-markers-marker-reference-py
+        plt.plot(sell_ticks, self.data.close[sell_ticks], 'ro')
+        plt.plot(buy_ticks, self.data.close[buy_ticks], 'go')
+        plt.savefig(path)
+
+
 
     def get_rate_of_return(self):
         portfolio = self.get_daily_portfolio_value()
