@@ -19,7 +19,7 @@ from pathlib import Path
 
 from PatternDetectionInCandleStick.Evaluation import Evaluation
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cuda" #torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class BaseTrain:

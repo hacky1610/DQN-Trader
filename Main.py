@@ -469,16 +469,16 @@ class SensitivityRun:
                                  window_size=self.window_size)
 
     def train(self):
-        self.dqn_pattern.train(self.n_episodes)
-        # self.dqn_vanilla.train(self.n_episodes)
-        # self.dqn_candle_rep.train(self.n_episodes)
-        # self.dqn_windowed.train(self.n_episodes)
-        # self.mlp_pattern.train(self.n_episodes)
-        # self.mlp_vanilla.train(self.n_episodes)
-        # self.mlp_candle_rep.train(self.n_episodes)
-        # self.mlp_windowed.train(self.n_episodes)
-        # self.cnn1d.train(self.n_episodes)
-        # self.cnn2d.train(self.n_episodes)
+        #self.dqn_pattern.train(self.n_episodes)
+        #self.dqn_vanilla.train(self.n_episodes)
+        #self.dqn_candle_rep.train(self.n_episodes)
+        #self.dqn_windowed.train(self.n_episodes)
+        #self.mlp_pattern.train(self.n_episodes)
+        #self.mlp_vanilla.train(self.n_episodes)
+        #self.mlp_candle_rep.train(self.n_episodes)
+        #self.mlp_windowed.train(self.n_episodes)
+        #self.cnn1d.train(self.n_episodes)
+        self.cnn2d.train(self.n_episodes)
         # self.gru.train(self.n_episodes)
         # self.deep_cnn.train(self.n_episodes)
         # self.cnn_gru.train(self.n_episodes)
@@ -493,20 +493,26 @@ class SensitivityRun:
         elif self.evaluation_parameter == 'replay memory size':
             key = self.replay_memory_size
 
-        self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
-        self.test_portfolios['DQN-vanilla'][key] = self.dqn_vanilla.test().get_daily_portfolio_value()
-        self.test_portfolios['DQN-candlerep'][key] = self.dqn_candle_rep.test().get_daily_portfolio_value()
-        self.test_portfolios['DQN-windowed'][key] = self.dqn_windowed.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-vanilla'][key] = self.mlp_vanilla.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-candlerep'][key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
-        self.test_portfolios['CNN1d'][key] = self.cnn1d.test().get_daily_portfolio_value()
         self.test_portfolios['CNN2d'][key] = self.cnn2d.test().get_daily_portfolio_value()
-        self.test_portfolios['GRU'][key] = self.gru.test().get_daily_portfolio_value()
-        self.test_portfolios['Deep-CNN'][key] = self.deep_cnn.test().get_daily_portfolio_value()
-        self.test_portfolios['CNN-GRU'][key] = self.cnn_gru.test().get_daily_portfolio_value()
-        self.test_portfolios['CNN-ATTN'][key] = self.cnn_attn.test().get_daily_portfolio_value()
+
+        # self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
+        # self.test_portfolios['DQN-vanilla'][key] = self.dqn_vanilla.test().get_daily_portfolio_value()
+        # self.test_portfolios['DQN-candlerep'][key] = self.dqn_candle_rep.test().get_daily_portfolio_value()
+        # self.test_portfolios['DQN-windowed'][key] = self.dqn_windowed.test().get_daily_portfolio_value()
+        # self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
+        # self.test_portfolios['MLP-vanilla'][key] = self.mlp_vanilla.test().get_daily_portfolio_value()
+        # self.test_portfolios['MLP-candlerep'][key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
+        # self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
+        # self.test_portfolios['CNN1d'][key] = self.cnn1d.test().get_daily_portfolio_value()
+        # self.test_portfolios['CNN2d'][key] = self.cnn2d.test().get_daily_portfolio_value()
+        # self.test_portfolios['GRU'][key] = self.gru.test().get_daily_portfolio_value()
+        # self.test_portfolios['Deep-CNN'][key] = self.deep_cnn.test().get_daily_portfolio_value()
+        # self.test_portfolios['CNN-GRU'][key] = self.cnn_gru.test().get_daily_portfolio_value()
+        # self.test_portfolios['CNN-ATTN'][key] = self.cnn_attn.test().get_daily_portfolio_value()
+
+        for p in self.test_portfolios.keys():
+            for i in self.test_portfolios[p].keys():
+                print(f"Profit - Model {p} - key {i} - {self.test_portfolios[p][i][-1]}")
 
     def evaluate_signals(self,path):
         self.dqn_pattern.test().get_signal_graph(os.path.join(path,"dqn_pattern.png"))
@@ -578,7 +584,7 @@ if __name__ == '__main__':
     window_size = args.window_size
     dataset_name = args.dataset_name
     n_episodes = args.nep
-    device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
+    device = "cuda" #torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
     feature_size = 64
     target_update = 5
 
@@ -603,6 +609,15 @@ if __name__ == '__main__':
         device,
         evaluation_parameter='gamma',
         transaction_cost=0)
+
+    run.gamma = 0.8
+    run.reset()
+    run.train()
+    run.evaluate_sensitivity()
+    run.evaluate_signals(f"./Results/gamma/")
+    pbar.update(1)
+
+    exit(0)
 
     for gamma in gamma_list:
         run.gamma = gamma
