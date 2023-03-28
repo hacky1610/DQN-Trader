@@ -80,22 +80,21 @@ class Data:
         today  = self.close_price[self.current_state_index]
         tomorrow = self.close_price[self.current_state_index + 1]
 
-
-
-        reward = 0
+        reward = -1
         if action == 0:  # Sell Share or No Share
             # consider the transaction in the reverse order
             diff = tomorrow - today
-            if diff > 0:
-                if diff > self.mean_diff * 0.3:
-                    reward = 1
+            if diff > self.mean_diff * 0.3:
+                reward = 1
 
         elif action == 2:
-            reward = today - tomorrow
+            diff = today - tomorrow
+            if diff > self.mean_diff * 0.3:
+                reward = 1
+        elif action == 1:
+            if abs(today - tomorrow) > self.mean_diff * 0.3:
+                reward = 1
 
-        multi = 1
-        if reward < 0:
-            multi = -1
         return reward
 
     def calculate_reward_for_one_step(self, action, index, rewards):
