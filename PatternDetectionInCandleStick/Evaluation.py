@@ -246,21 +246,21 @@ class Evaluation:
         arithmetic_return = self.data[f'arithmetic_daily_return_{self.action_label}'] / 100
         num_shares = 0
 
+        buy_price = -1
         for i in range(len(self.data)):
             action = self.data[self.action_label][i]
             if action == 'buy' and num_shares == 0:  # then buy and pay the transaction cost
-                num_shares = portfolio_value[-1] * (1 - self.trading_cost_ratio) / \
-                             self.data.iloc[i]['close']
-                if i + 1 < len(self.data):
-                    portfolio_value.append(num_shares * self.data.iloc[i + 1]['close'])
+                buy_price = self.data.iloc[i]['close'] / 1000
+                portfolio_value.append(portfolio_value[-1] - buy_price)
+                num_shares = 1
 
             elif action == 'sell' and num_shares > 0:  # then sell and pay the transaction cost
-                portfolio_value.append(num_shares * self.data.iloc[i]['close'] * (1 - self.trading_cost_ratio))
+                sell = self.data.iloc[i]['close'] / 1000
+                portfolio_value.append(portfolio_value[-1] + sell - buy_price)
                 num_shares = 0
 
             elif (action == 'None' or action == 'buy') and num_shares > 0:  # hold shares and get profit
-                profit = arithmetic_return[i] * portfolio_value[len(portfolio_value) - 1]
-                portfolio_value.append(portfolio_value[-1] + profit)
+                portfolio_value.append(portfolio_value[-1])
 
             elif (action == 'sell' or action == 'None') and num_shares == 0:
                 portfolio_value.append(portfolio_value[-1])

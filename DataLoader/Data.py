@@ -30,7 +30,7 @@ class Data:
         self.action_name = action_name
         self.code_to_action = {0: 'buy', 1: 'None', 2: 'sell'}
         self.start_index_reward = start_index_reward
-
+        self.mean_diff = abs(self.data.close.pct_change(1)).mean()
         self.trading_cost_ratio = transaction_cost
 
     def get_current_state(self):
@@ -76,20 +76,26 @@ class Data:
         @return: reward
         """
 
-        reward_index_first = self.current_state_index + self.start_index_reward
-        reward_index_last = self.current_state_index + self.start_index_reward + self.n_step \
-            if self.current_state_index + self.n_step < len(self.states) else len(self.close_price) - 1
 
-        p1 = self.close_price[reward_index_first]
-        p2 = self.close_price[reward_index_last]
+        today  = self.close_price[self.current_state_index]
+        tomorrow = self.close_price[self.current_state_index + 1]
+
+
 
         reward = 0
-        if action == 0 or (action == 1 and self.own_share):  # Buy Share or Hold Share
-            reward = ((1 - self.trading_cost_ratio) ** 2 * p2 / p1 - 1) * 100  # profit in percent
-        elif action == 2 or (action == 1 and not self.own_share):  # Sell Share or No Share
+        if action == 0:  # Sell Share or No Share
             # consider the transaction in the reverse order
-            reward = ((1 - self.trading_cost_ratio) ** 2 * p1 / p2 - 1) * 100
+            diff = tomorrow - today
+            if diff > 0:
+                if diff > self.mean_diff * 0.3:
+                    reward = 1
 
+        elif action == 2:
+            reward = today - tomorrow
+
+        multi = 1
+        if reward < 0:
+            multi = -1
         return reward
 
     def calculate_reward_for_one_step(self, action, index, rewards):
